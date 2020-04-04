@@ -1,4 +1,8 @@
 const getters = {
+  postKeyword: state => state.post.keyword,
+  postCategoryId: state => state.post.categoryId,
+  postListStatus: state => state.post.status,
+
   device: state => state.app.device,
   theme: state => state.app.theme,
   color: state => state.app.color,

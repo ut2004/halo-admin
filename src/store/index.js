@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
+import post from './modules/post'
 import app from './modules/app'
 import user from './modules/user'
 import permission from './modules/permission'
@@ -11,6 +12,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   modules: {
+    post,
     app,
     user,
     permission,
