@@ -89,6 +89,8 @@ export default {
   },
   data() {
     return {
+      contentChanged: false, // 监听文章内容
+      timer: null, // 定时器
       attachmentDrawerVisible: false,
       postSettingVisible: false,
       postToStage: {},
@@ -115,6 +117,9 @@ export default {
         })
       }
     })
+  },
+  beforeDestroy() {
+    clearInterval(this.timer)
   },
   destroyed: function() {
     if (this.postSettingVisible) {
@@ -163,12 +168,17 @@ export default {
     // if (!this.postToStage.editorType) {
     //   this.postToStage.editorType = this.options.default_editor
     // }
+
+    this.autoSave()
   },
   watch: {
     temporaryContent: function(newValue, oldValue) {
       if (newValue) {
         this.contentChanges++
       }
+    },
+    'postToStage.originalContent': function() {
+      this.contentChanged = true
     }
   },
   computed: {
@@ -178,7 +188,9 @@ export default {
     // ...mapGetters(['options'])
   },
   methods: {
-    handleSaveDraft(draftOnly = false) {
+    handleSaveDraft(draftOnly = false, auto = false) {
+      this.contentChanged = false // 关闭自动保存
+
       this.$log.debug('Draft only: ' + draftOnly)
       this.postToStage.status = 'DRAFT'
       if (!this.postToStage.title) {
@@ -191,7 +203,9 @@ export default {
           postApi
             .updateDraft(this.postToStage.id, this.postToStage.originalContent)
             .then(response => {
-              this.$message.success('保存草稿成功！')
+              if (!auto) {
+                this.$message.success('保存草稿成功！')
+              }
             })
             .finally(() => {
               this.draftSaving = false
@@ -201,7 +215,9 @@ export default {
             .update(this.postToStage.id, this.postToStage, false)
             .then(response => {
               this.$log.debug('Updated post', response.data.data)
-              this.$message.success('保存草稿成功！')
+              if (!auto) {
+                this.$message.success('保存草稿成功！')
+              }
               this.postToStage = response.data.data
             })
             .finally(() => {
@@ -214,7 +230,9 @@ export default {
           .create(this.postToStage, false)
           .then(response => {
             this.$log.debug('Created post', response.data.data)
-            this.$message.success('保存草稿成功！')
+            if (!auto) {
+              this.$message.success('保存草稿成功！')
+            }
             this.postToStage = response.data.data
           })
           .finally(() => {
@@ -281,6 +299,13 @@ export default {
     },
     onSaved(isSaved) {
       this.isSaved = isSaved
+    },
+    autoSave() {
+      this.timer = setInterval(() => {
+        if (this.contentChanged) {
+          this.handleSaveDraft(true, true)
+        }
+      }, 7000)
     }
   }
 }
