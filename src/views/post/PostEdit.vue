@@ -305,7 +305,7 @@ export default {
         if (this.contentChanged) {
           this.handleSaveDraft(true, true)
         }
-      }, 7000)
+      }, 2000)
     }
   }
 }
